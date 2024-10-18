@@ -12,7 +12,7 @@ on:
 
 jobs:
   codeQL:
-    uses: rudini/blog-app/.github/workflows/codeql.yml@main
+    uses: hftm-in2022/blog-app/.github/workflows/codeql.yml@main
 
   build:
     needs: codeQL
