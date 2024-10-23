@@ -40,13 +40,13 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-report
-        path: reports/test-summary/index.html
+        path: reports/test-summary
 
     - name: Upload Coverage Report
       uses: actions/upload-artifact@v3
       with:
         name: coverage-report
-        path: reports/coverage/index.html
+        path: reports/coverage
 
   deploy:
     needs: build
