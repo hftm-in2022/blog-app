@@ -23,4 +23,9 @@ export const APP_ROUTES: Routes = [
       import('./features/blog-overview-page/blog-overview-page.routes'),
     resolve: { model: entriesResolver },
   },
+  {
+    path: 'detail',
+    loadChildren: () =>
+      import('./features/blog-detail-page/blog-detail-page.routes'),
+  },
 ];

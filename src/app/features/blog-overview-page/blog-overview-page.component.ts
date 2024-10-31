@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { BlogOverviewCardComponent } from '../../shared/blog-overview-card/blog-overview-card.component';
+import { RouterLink } from '@angular/router';
 
 type Model = {
   data: {
@@ -22,7 +23,7 @@ type Model = {
 @Component({
   selector: 'app-blog-overview-page',
   standalone: true,
-  imports: [BlogOverviewCardComponent],
+  imports: [BlogOverviewCardComponent, RouterLink],
   templateUrl: './blog-overview-page.component.html',
   styleUrl: './blog-overview-page.component.scss',
 })
