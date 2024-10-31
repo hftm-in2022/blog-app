@@ -1,6 +1,5 @@
-@let blogs = blogs$ | async;
 <div class="blog-container">
-  @for (blog of blogs?.data; track blog.id) {
+  @for (blog of model.data; track blog.id) {
     <mat-card class="blog-card">
       <mat-card-header>
         <mat-card-title class="card-title" data-testid="title">{{
