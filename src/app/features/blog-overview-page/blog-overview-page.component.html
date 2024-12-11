@@ -1,0 +1,8 @@
+<div class="blog-container">
+  @for (blog of model.data; track blog.id) {
+    <app-blog-overview-card
+      [blog]="blog"
+      [routerLink]="['/detail/', blog.id]"
+    ></app-blog-overview-card>
+  }
+</div>
