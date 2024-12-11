@@ -19,13 +19,17 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'overview',
-    loadChildren: () =>
-      import('./features/blog-overview-page/blog-overview-page.routes'),
+    loadComponent: () =>
+      import('./features/blog-overview-page/blog-overview-page.component').then(
+        (c) => c.BlogOverviewPageComponent,
+      ),
     resolve: { model: entriesResolver },
   },
   {
-    path: 'detail',
-    loadChildren: () =>
-      import('./features/blog-detail-page/blog-detail-page.routes'),
+    path: 'detail/:id',
+    loadComponent: () =>
+      import('./features/blog-detail-page/blog-detail-page.component').then(
+        (c) => c.BlogDetailPageComponent,
+      ),
   },
 ];
