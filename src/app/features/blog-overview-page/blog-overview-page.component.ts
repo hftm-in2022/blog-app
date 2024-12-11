@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { BlogOverviewCardComponent } from '../../shared/blog-overview-card/blog-overview-card.component';
 import { RouterLink } from '@angular/router';
 
@@ -26,6 +26,7 @@ type Model = {
   imports: [BlogOverviewCardComponent, RouterLink],
   templateUrl: './blog-overview-page.component.html',
   styleUrl: './blog-overview-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BlogOverviewPageComponent {
   @Input({ required: true }) model!: Model;
