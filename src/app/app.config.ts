@@ -10,6 +10,7 @@ import {
 } from '@angular/common/http';
 import { authConfig } from './core/auth/auth.config';
 import { AuthInterceptor, provideAuth } from 'angular-auth-oidc-client';
+import { provideMarkdown } from 'ngx-markdown';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,6 +19,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideHttpClient(withInterceptorsFromDi()),
     provideAuth(authConfig),
+    provideMarkdown(),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
   ],
 };

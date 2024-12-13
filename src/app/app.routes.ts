@@ -1,6 +1,7 @@
 import { ResolveFn, Routes } from '@angular/router';
 import {
   BlogBackendService,
+  BlogDetail,
   Entries,
 } from './core/services/blog-backend.service';
 import { inject } from '@angular/core';
@@ -10,6 +11,13 @@ import { isAuthenticatedGuard } from './core/auth/auth-guard';
 export const entriesResolver: ResolveFn<Entries> = async () => {
   const blogBackendService = inject(BlogBackendService);
   return await lastValueFrom(blogBackendService.getBlogPosts());
+};
+
+export const entryResolver: ResolveFn<BlogDetail> = async (route) => {
+  const blogBackendService = inject(BlogBackendService);
+  return await lastValueFrom(
+    blogBackendService.getBlogDetail(route.params['id']),
+  );
 };
 
 export const APP_ROUTES: Routes = [
@@ -32,6 +40,7 @@ export const APP_ROUTES: Routes = [
       import('./features/blog-detail-page/blog-detail-page.component').then(
         (c) => c.BlogDetailPageComponent,
       ),
+    resolve: { model: entryResolver },
   },
   {
     path: 'add-blog',

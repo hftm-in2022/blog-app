@@ -4,6 +4,28 @@ import { lastValueFrom, map, Observable } from 'rxjs';
 import { z } from 'zod';
 import { environment } from '../../../environments/environment';
 
+const CommentSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  author: z.string(),
+  updatedAt: z.string(),
+  createdAt: z.string(),
+});
+
+const BlogDetailSchema = z.object({
+  id: z.number(),
+  updatedAt: z.string(),
+  createdAt: z.string(),
+  title: z.string(),
+  content: z.string(),
+  comments: z.array(CommentSchema),
+  author: z.string(),
+  likes: z.number(),
+  likedByMe: z.boolean(),
+  createdByMe: z.boolean(),
+  headerImageUrl: z.string().optional(),
+});
+
 const BlogSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -31,6 +53,8 @@ const CreatedBlogSchema = z.object({
   content: z.string(),
 });
 
+export type BlogDetail = z.infer<typeof BlogDetailSchema>;
+
 export type CreatedBlog = z.infer<typeof CreatedBlogSchema>;
 
 export type Blog = z.infer<typeof BlogSchema>;
@@ -54,5 +78,11 @@ export class BlogBackendService {
     return lastValueFrom(
       this.httpClient.post(`${environment.serviceUrl}/entries`, blog),
     );
+  }
+
+  getBlogDetail(id: number) {
+    return this.httpClient
+      .get<Blog>(`${environment.serviceUrl}/entries/${id}`)
+      .pipe(map((blog) => BlogDetailSchema.parse(blog)));
   }
 }
