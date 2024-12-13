@@ -3,7 +3,6 @@ import { RouterOutlet } from '@angular/router';
 import { LoadingStateService } from './core/services/loading-state.service';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { HeaderComponent } from './core/header/header.component';
-import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { AuthStateService } from './core/auth/auth-state.service';
 
 @Component({
@@ -18,16 +17,14 @@ export class AppComponent {
   title = 'blog-app';
 
   authStateService = inject(AuthStateService);
-
-  #oidcSecurityService = inject(OidcSecurityService);
   #loadingService = inject(LoadingStateService);
 
   isLoading = this.#loadingService.state;
 
   login() {
-    this.#oidcSecurityService.authorize();
+    this.authStateService.authorize();
   }
   logout() {
-    this.#oidcSecurityService.logoff().subscribe((x) => console.log(x));
+    this.authStateService.logoff();
   }
 }

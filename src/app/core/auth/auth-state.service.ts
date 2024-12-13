@@ -12,6 +12,13 @@ export class AuthStateService {
   authorize() {
     this.#oidcSecurityService.authorize();
   }
+
+  logoff() {
+    this.#oidcSecurityService
+      .logoff()
+      .subscribe((x) => console.log('signed out', x));
+  }
+
   loginResponse = toSignal(
     this.#oidcSecurityService
       .checkAuth()
