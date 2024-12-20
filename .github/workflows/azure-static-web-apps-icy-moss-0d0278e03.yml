@@ -6,8 +6,7 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    branches:
-      - main
+    branches: ['main', 'dev', 'feature/*', 'chore-ng-update-*']
   workflow_dispatch:
 
 jobs:
