@@ -20,89 +20,88 @@ jobs:
     strategy:
       matrix:
         node-version: [22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Wichtig für die Versionierung
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: package-lock.json
-    - name: npm install, build, and test
+
+    - name: Install and Build
       run: |
-          npm ci
-          npm run build --if-present
-          npm run test:ci --if-present
+        npm ci
+        npm run build --if-present
+        npm run test:ci --if-present
 
     - name: Upload HTML Test Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # Aktualisiert auf v4
+      if: always()  # Läuft auch bei Fehlern
       with:
         name: test-report
         path: reports/test-summary
+        retention-days: 14  # Begrenzt die Aufbewahrungszeit
 
     - name: Upload Coverage Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # Aktualisiert auf v4
+      if: always()  # Läuft auch bei Fehlern
       with:
         name: coverage-report
         path: reports/coverage
+        retention-days: 14  # Begrenzt die Aufbewahrungszeit
 
   deploy:
     needs: build
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     name: Deploy Job
+    permissions:
+      contents: write  # Explizite Berechtigung für Git-Operationen
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4  # Aktualisiert auf v4
         with:
           submodules: true
-          lfs: false
-      - name: Deploy
+          fetch-depth: 0  # Wichtig für die Versionierung
+
+      - name: Deploy to Azure
         id: deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ICY_MOSS_0D0278E03 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # App source code path
-          api_location: "" # Api source code path - optional
-          output_location: "dist/blog-app/browser" # Built app content directory - optional
-          ###### End of Repository/Build Configurations ######
+          app_location: "/"
+          api_location: ""
+          output_location: "dist/blog-app/browser"
+
+      - name: Setup Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Determine Version
+        id: version
         run: |
-          # Get the last tag or default to 0.0.0
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "Last tag: $LAST_TAG"
 
-          # Extract the major, minor, and patch versions
           MAJOR=$(echo $LAST_TAG | awk -F. '{print $1}' | sed 's/v//')
           MINOR=$(echo $LAST_TAG | awk -F. '{print $2}')
           PATCH=$(echo $LAST_TAG | awk -F. '{print $3}')
 
-          # Get commits since the last tag
-          COMMITS=$(git log --pretty=format:"%s" "$LAST_TAG"..HEAD || echo "")
-          echo "Commits: $COMMITS"
+          COMMITS=$(git log --pretty=format:"%s" "$LAST_TAG"..HEAD)
 
-          # Determine the version bump
-          VERSION_BUMP="patch"
-          for COMMIT in $COMMITS; do
-            if [[ "$COMMIT" == *"BREAKING CHANGE"* ]]; then
-              VERSION_BUMP="major"
-              break
-            elif [[ "$COMMIT" == *"fix"* ]]; then
-              VERSION_BUMP="minor"
-            fi
-          done
-
-          # Increment version
-          if [[ "$VERSION_BUMP" == "major" ]]; then
+          if echo "$COMMITS" | grep -q "BREAKING CHANGE"; then
             MAJOR=$((MAJOR + 1))
             MINOR=0
             PATCH=0
-          elif [[ "$VERSION_BUMP" == "minor" ]]; then
+          elif echo "$COMMITS" | grep -q "feat"; then
             MINOR=$((MINOR + 1))
             PATCH=0
           else
@@ -111,15 +110,28 @@ jobs:
 
           NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
           echo "New version: $NEW_VERSION"
-
-          # Export the version
           echo "version=$NEW_VERSION" >> $GITHUB_ENV
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Create Git Tag
+      - name: Update Version in Files
         run: |
-          echo "Creating tag: ${version}"
-          git tag ${version}
-          git push origin ${version}
-        env:
-          version: ${{ env.version }}
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update package.json
+          if [ -f "package.json" ]; then
+            sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION#v}\"/" package.json
+          fi
+          # Update index.html
+          if [ -f "src/index.html" ]; then
+            sed -i "s/<meta name=\"version\" content=\".*\"/<meta name=\"version\" content=\"$VERSION\"/" src/index.html
+          fi
 
+      - name: Commit and Tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add package.json src/index.html
+            git commit -m "chore: update version to $VERSION [skip ci]"
+            git push
+          fi
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
