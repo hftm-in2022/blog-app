@@ -1,1 +1,11 @@
-<router-outlet></router-outlet>
+<app-header
+  (login)="login()"
+  (logout)="logout()"
+  [loginState]="authStateService.loginResponse()"
+/>
+
+@if (isLoading()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+} @else {
+  <router-outlet></router-outlet>
+}
