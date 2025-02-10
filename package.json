@@ -35,7 +35,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.0.6",
     "@angular/cli": "^19.0.6",
-    "@angular/compiler-cli": "^19.0.5",
+    "@angular/compiler-cli": "^19.1.5",
     "@commitlint/config-conventional": "^19.6.0",
     "@types/jasmine": "~5.1.5",
     "angular-eslint": "19.0.2",
